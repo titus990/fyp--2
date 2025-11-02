@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'boxing_page.dart';
-import 'self_defense.dart';
-import 'kick_boxing.dart';
+import 'sports/boxing_page.dart';
+import 'sports/self_defense.dart';
+import 'sports/kick_boxing.dart';
 import 'widgets/custom_button.dart';
 
 void main() {

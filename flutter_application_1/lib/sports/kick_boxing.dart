@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'widgets/workout_detail.dart';
-import 'widgets/hover_card.dart';
+import '../widgets/workout_detail.dart';
+import '../widgets/hover_card.dart';
 
 class KickBoxingPage extends StatefulWidget {
   const KickBoxingPage({super.key});

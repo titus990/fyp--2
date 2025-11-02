@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'widgets/hover_card.dart';
-import 'widgets/workout_detail.dart';
-import 'widgets/timer_page.dart';
+import '../widgets/hover_card.dart';
+import '../widgets/workout_detail.dart';
+import '../widgets/timer_page.dart';
 
 class SelfDefensePage extends StatelessWidget {
   const SelfDefensePage({super.key});
