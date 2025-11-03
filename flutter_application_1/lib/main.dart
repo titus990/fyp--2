@@ -17,7 +17,7 @@ class StrikeForceApp extends StatelessWidget {
     return MaterialApp(
       title: 'Strike Force',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData.dark().copyWith(scaffoldBackgroundColor: Colors.black),
+      theme: ThemeData.dark().copyWith(scaffoldBackgroundColor: Colors.white),
       initialRoute: '/',
       routes: {
         '/': (context) => const SplashScreen(),
@@ -54,7 +54,6 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller.forward();
 
-    // Navigate to Welcome Page after 3 seconds
     Timer(const Duration(seconds: 3), () {
       Navigator.pushReplacementNamed(context, '/welcome');
     });
@@ -76,7 +75,6 @@ class _SplashScreenState extends State<SplashScreen>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Using Icon instead of Image.asset to avoid missing asset error
               Icon(Icons.sports_mma, size: 120, color: Colors.redAccent),
               const SizedBox(height: 24),
               const Text(
@@ -111,30 +109,100 @@ class WelcomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: const Color(0xFF0A0E21),
       body: SafeArea(
-        child: Center(
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Color(0xFF1A1F38), Color(0xFF0A0E21)],
+            ),
+          ),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24.0),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text(
-                  'Welcome to Strike Force',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
+                const Spacer(flex: 2),
+
+                // Animated Logo/Icon
+                Container(
+                  width: 120,
+                  height: 120,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFFFF6B6B), Color(0xFFFF8E53)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.red.withOpacity(0.4),
+                        blurRadius: 20,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                  child: const Icon(
+                    Icons.sports_mma_rounded,
                     color: Colors.white,
-                    fontSize: 26,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.5,
+                    size: 60,
                   ),
                 ),
-                const SizedBox(height: 40),
+                const SizedBox(height: 30),
+
+                // Welcome Text
+                const Text(
+                  'Welcome to',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 24,
+                    fontWeight: FontWeight.w300,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+                const SizedBox(height: 8),
+
+                // App Name with Gradient
+                ShaderMask(
+                  shaderCallback: (bounds) => const LinearGradient(
+                    colors: [Color(0xFFFF6B6B), Color(0xFFFF8E53)],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                  ).createShader(bounds),
+                  child: const Text(
+                    'Strike Force',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 36,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 2.0,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+
+                // Subtitle
+                const Text(
+                  'Choose your fighting style',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white54,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w300,
+                    letterSpacing: 1.0,
+                  ),
+                ),
+                const SizedBox(height: 50),
 
                 // Boxing Button
                 CustomButton(
                   label: 'Boxing',
-                  color: Colors.redAccent,
+                  color: const Color(0xFFFF416C),
+                  icon: Icons.sports_martial_arts,
                   onPressed: () {
                     Navigator.pushNamed(context, '/boxing');
                   },
@@ -144,7 +212,8 @@ class WelcomePage extends StatelessWidget {
                 // Self Defense Button
                 CustomButton(
                   label: 'Self Defense',
-                  color: Colors.blueAccent,
+                  color: const Color(0xFF2193B0),
+                  icon: Icons.security,
                   onPressed: () {
                     Navigator.pushNamed(context, '/selfdefense');
                   },
@@ -154,11 +223,14 @@ class WelcomePage extends StatelessWidget {
                 // Kick Boxing Button
                 CustomButton(
                   label: 'Kick Boxing',
-                  color: Colors.orangeAccent,
+                  color: const Color(0xFFFF8C00),
+                  icon: Icons.sports_kabaddi,
                   onPressed: () {
                     Navigator.pushNamed(context, '/kickboxing');
                   },
                 ),
+
+                const Spacer(flex: 3),
               ],
             ),
           ),

@@ -8,17 +8,21 @@ class SelfDefensePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const redAccent = Color(0xFFE50914);
-
     void openWorkout(String title, bool isPremium) {
       if (isPremium) {
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
-            backgroundColor: Colors.black,
+            backgroundColor: const Color(0xFF1A1F38),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
             title: const Text(
               'Premium Workout',
-              style: TextStyle(color: Colors.white),
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             content: Text(
               'You are now starting "$title". Enjoy your premium workout!',
@@ -27,9 +31,26 @@ class SelfDefensePage extends StatelessWidget {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text(
-                  'Close',
-                  style: TextStyle(color: Colors.white),
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF2193B0), Color(0xFF6DD5ED)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 10,
+                  ),
+                  child: const Text(
+                    'Close',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -47,181 +68,231 @@ class SelfDefensePage extends StatelessWidget {
     }
 
     return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'Self Defense',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1.2,
+      backgroundColor: const Color(0xFF0A0E21),
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            backgroundColor: const Color(0xFF1A1F38),
+            expandedHeight: 200,
+            floating: false,
+            pinned: true,
+            flexibleSpace: FlexibleSpaceBar(
+              title: const Text(
+                'Self Defense',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 24,
+                ),
+              ),
+              background: Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Color(0xFF2193B0), Color(0xFF6DD5ED)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
+                child: const Icon(
+                  Icons.security,
+                  color: Colors.white,
+                  size: 80,
+                ),
+              ),
+            ),
+            leading: IconButton(
+              icon: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.arrow_back_rounded,
+                  color: Colors.white,
+                ),
+              ),
+              onPressed: () => Navigator.pop(context),
+            ),
           ),
-        ),
-        centerTitle: true,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _sectionTitle('Popular Self-Defense Drills'),
-            const SizedBox(height: 10),
-            SizedBox(
-              height: 190,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _workoutCard(
-                    context,
-                    title: 'Escape from wrist grab',
-                    subtitle: 'Beginner level defense',
-                    rating: '4.8 / 5',
-                    tag: 'FREE',
-                    time: '15 MIN',
-                    isPremium: false,
-                    image:
-                        'https://images.unsplash.com/photo-1604068549290-dea0e4a305ca',
-                    accent: redAccent,
-                    onTap: () => openWorkout('Escape from wrist grab', false),
+                  // Popular Self-Defense Drills Section
+                  _buildSectionTitle('Popular Self-Defense Drills'),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    height: 200,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      children: [
+                        _buildWorkoutCard(
+                          title: 'Escape from wrist grab',
+                          subtitle: 'Beginner level defense',
+                          rating: '4.8 / 5',
+                          tag: 'FREE',
+                          time: '15 MIN',
+                          isPremium: false,
+                          image:
+                              'https://images.unsplash.com/photo-1604068549290-dea0e4a305ca',
+                          onTap: () =>
+                              openWorkout('Escape from wrist grab', false),
+                        ),
+                        _buildWorkoutCard(
+                          title: 'Defend against choke hold',
+                          subtitle: 'Intermediate counter',
+                          rating: '4.9 / 5',
+                          tag: 'PREMIUM',
+                          time: '25 MIN',
+                          isPremium: true,
+                          image:
+                              'https://images.unsplash.com/photo-1605296867304-46d5465a13f1',
+                          onTap: () =>
+                              openWorkout('Defend against choke hold', true),
+                        ),
+                        _buildWorkoutCard(
+                          title: 'Ground defense fundamentals',
+                          subtitle: 'Stay safe when pinned',
+                          rating: '4.7 / 5',
+                          tag: 'FREE',
+                          time: '20 MIN',
+                          isPremium: false,
+                          image:
+                              'https://images.unsplash.com/photo-1590080875831-bc93c6c66f93',
+                          onTap: () =>
+                              openWorkout('Ground defense fundamentals', false),
+                        ),
+                      ],
+                    ),
                   ),
-                  _workoutCard(
-                    context,
-                    title: 'Defend against choke hold',
-                    subtitle: 'Intermediate counter',
-                    rating: '4.9 / 5',
-                    tag: 'PREMIUM',
-                    time: '25 MIN',
-                    isPremium: true,
-                    image:
-                        'https://images.unsplash.com/photo-1605296867304-46d5465a13f1',
-                    accent: redAccent,
-                    onTap: () => openWorkout('Defend against choke hold', true),
+                  const SizedBox(height: 30),
+
+                  // Combine Your Training Section
+                  _buildSectionTitle('Combine Your Training'),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _buildSmallCard(
+                        title: 'Scenario Drills',
+                        subtitle: 'Simulate real-life attacks',
+                        tag: 'PREMIUM',
+                        image:
+                            'https://images.unsplash.com/photo-1598970434795-0c54fe7c0642',
+                        onTap: () => openWorkout('Scenario Drills', true),
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF2193B0), Color(0xFF6DD5ED)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                      ),
+                      _buildSmallCard(
+                        title: 'Partner Practice',
+                        subtitle: 'Team up for resistance drills',
+                        tag: 'PREMIUM',
+                        image:
+                            'https://images.unsplash.com/photo-1573497491208-6b1acb260507',
+                        onTap: () => openWorkout('Partner Practice', true),
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFFF416C), Color(0xFFFF4B2B)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                      ),
+                    ],
                   ),
-                  _workoutCard(
-                    context,
-                    title: 'Ground defense fundamentals',
-                    subtitle: 'Stay safe when pinned',
-                    rating: '4.7 / 5',
-                    tag: 'FREE',
-                    time: '20 MIN',
-                    isPremium: false,
-                    image:
-                        'https://images.unsplash.com/photo-1590080875831-bc93c6c66f93',
-                    accent: redAccent,
-                    onTap: () =>
-                        openWorkout('Ground defense fundamentals', false),
+                  const SizedBox(height: 30),
+
+                  // Learn & Awareness Section
+                  _buildSectionTitle('Learn & Awareness'),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _buildSmallCard(
+                        title: 'Basic Defense Guide',
+                        subtitle: 'Learn key body mechanics',
+                        tag: 'FREE',
+                        image:
+                            'https://images.unsplash.com/photo-1576678927484-cc907957088c',
+                        onTap: () => openWorkout('Basic Defense Guide', false),
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF4CAF50), Color(0xFF45A049)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                      ),
+                      _buildSmallCard(
+                        title: 'Street Awareness',
+                        subtitle: 'Recognize threats early',
+                        tag: 'FREE',
+                        image:
+                            'https://images.unsplash.com/photo-1573496529574-be85d6a60704',
+                        onTap: () => openWorkout('Street Awareness', false),
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFFF8C00), Color(0xFFFFD700)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                      ),
+                    ],
                   ),
+                  const SizedBox(height: 30),
+
+                  // Freestyle Section
+                  _buildSectionTitle('Freestyle'),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _buildSmallCard(
+                        title: 'Custom Routine',
+                        subtitle: 'Create your own flow',
+                        tag: 'PREMIUM',
+                        image:
+                            'https://images.unsplash.com/photo-1581291518835-42c67c5a99d9',
+                        onTap: () => openWorkout('Custom Routine', true),
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF2193B0), Color(0xFF6DD5ED)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 30),
                 ],
               ),
             ),
-            const SizedBox(height: 25),
-            _sectionTitle('Combine Your Training'),
-            const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _smallCard(
-                  context,
-                  title: 'Scenario Drills',
-                  subtitle: 'Simulate real-life attacks',
-                  tag: 'PREMIUM',
-                  isLocked: false,
-                  image:
-                      'https://images.unsplash.com/photo-1598970434795-0c54fe7c0642',
-                  accent: redAccent,
-                  onTap: () => openWorkout('Scenario Drills', true),
-                ),
-                _smallCard(
-                  context,
-                  title: 'Partner Practice',
-                  subtitle: 'Team up for resistance drills',
-                  tag: 'PREMIUM',
-                  isLocked: false,
-                  image:
-                      'https://images.unsplash.com/photo-1573497491208-6b1acb260507',
-                  accent: redAccent,
-                  onTap: () => openWorkout('Partner Practice', true),
-                ),
-              ],
-            ),
-            const SizedBox(height: 25),
-            _sectionTitle('Learn & Awareness'),
-            const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _smallCard(
-                  context,
-                  title: 'Basic Defense Guide',
-                  subtitle: 'Learn key body mechanics',
-                  tag: 'FREE',
-                  isLocked: false,
-                  image:
-                      'https://images.unsplash.com/photo-1576678927484-cc907957088c',
-                  accent: redAccent,
-                  onTap: () => openWorkout('Basic Defense Guide', false),
-                ),
-                _smallCard(
-                  context,
-                  title: 'Street Awareness',
-                  subtitle: 'Recognize threats early',
-                  tag: 'FREE',
-                  isLocked: false,
-                  image:
-                      'https://images.unsplash.com/photo-1573496529574-be85d6a60704',
-                  accent: redAccent,
-                  onTap: () => openWorkout('Street Awareness', false),
-                ),
-              ],
-            ),
-            const SizedBox(height: 25),
-            _sectionTitle('Freestyle'),
-            const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _timerCard(context, redAccent),
-                _smallCard(
-                  context,
-                  title: 'Custom Routine',
-                  subtitle: 'Create your own flow',
-                  tag: 'PREMIUM',
-                  isLocked: false,
-                  image:
-                      'https://images.unsplash.com/photo-1581291518835-42c67c5a99d9',
-                  accent: redAccent,
-                  onTap: () => openWorkout('Custom Routine', true),
-                ),
-              ],
-            ),
-          ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return ShaderMask(
+      shaderCallback: (bounds) => const LinearGradient(
+        colors: [Color(0xFF2193B0), Color(0xFF6DD5ED)],
+        begin: Alignment.centerLeft,
+        end: Alignment.centerRight,
+      ).createShader(bounds),
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
         ),
       ),
     );
   }
 
-  // --- Section Header ---
-  Widget _sectionTitle(String title) {
-    return Text(
-      title,
-      style: const TextStyle(
-        color: Colors.white,
-        fontSize: 20,
-        fontWeight: FontWeight.w800,
-        letterSpacing: 0.8,
-      ),
-    );
-  }
-
-  // --- Workout Card with tap functionality ---
-  Widget _workoutCard(
-    BuildContext context, {
+  Widget _buildWorkoutCard({
     required String title,
     required String subtitle,
     required String rating,
@@ -229,64 +300,81 @@ class SelfDefensePage extends StatelessWidget {
     required String time,
     required bool isPremium,
     required String image,
-    required Color accent,
     required VoidCallback onTap,
   }) {
     return HoverCard(
       onTap: onTap,
       child: Container(
-        width: 260,
-        margin: const EdgeInsets.only(right: 12),
+        width: 280,
+        margin: const EdgeInsets.only(right: 16),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(20),
           image: DecorationImage(image: NetworkImage(image), fit: BoxFit.cover),
         ),
         child: Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(20),
             gradient: LinearGradient(
-              colors: [Colors.black.withOpacity(0.85), Colors.transparent],
+              colors: [Colors.black.withOpacity(0.8), Colors.transparent],
               begin: Alignment.bottomCenter,
               end: Alignment.topCenter,
             ),
           ),
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(16),
+          alignment: Alignment.bottomLeft,
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.end,
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.end,
             children: [
               Row(
                 children: [
-                  _buildTag(tag, isPremium, accent),
+                  _buildTag(
+                    tag,
+                    isPremium,
+                    isPremium
+                        ? const LinearGradient(
+                            colors: [Color(0xFFFFD700), Color(0xFFFF8C00)],
+                          )
+                        : const LinearGradient(
+                            colors: [Color(0xFF4CAF50), Color(0xFF45A049)],
+                          ),
+                  ),
                   const SizedBox(width: 8),
                   _buildTag(
                     time,
                     false,
-                    Colors.white70,
+                    const LinearGradient(
+                      colors: [Colors.white70, Colors.white54],
+                    ),
                     textColor: Colors.black,
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
               Text(
                 title,
                 style: const TextStyle(
                   color: Colors.white,
+                  fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  fontSize: 15,
                 ),
               ),
               Text(
                 subtitle,
-                style: const TextStyle(color: Colors.grey, fontSize: 12),
+                style: const TextStyle(color: Colors.white70, fontSize: 14),
               ),
+              const SizedBox(height: 4),
               Row(
                 children: [
                   const Icon(Icons.star, color: Colors.amber, size: 16),
                   const SizedBox(width: 4),
                   Text(
                     rating,
-                    style: const TextStyle(color: Colors.white, fontSize: 12),
+                    style: const TextStyle(
+                      color: Colors.amber,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ],
               ),
@@ -297,65 +385,86 @@ class SelfDefensePage extends StatelessWidget {
     );
   }
 
-  // --- Small Card with functionality ---
-  Widget _smallCard(
-    BuildContext context, {
+  Widget _buildSmallCard({
     required String title,
     required String subtitle,
     required String tag,
-    required bool isLocked,
     required String image,
-    required Color accent,
     required VoidCallback onTap,
+    required Gradient gradient,
   }) {
     return HoverCard(
       onTap: onTap,
       child: Container(
-        width: 160,
+        width: 170,
         height: 160,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(14),
-          image: DecorationImage(image: NetworkImage(image), fit: BoxFit.cover),
+          borderRadius: BorderRadius.circular(20),
+          gradient: gradient,
         ),
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(14),
-            gradient: LinearGradient(
-              colors: [Colors.black.withOpacity(0.85), Colors.transparent],
-              begin: Alignment.bottomCenter,
-              end: Alignment.topCenter,
-            ),
-          ),
-          padding: const EdgeInsets.all(10),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildTag(tag, tag == 'PREMIUM', accent),
-              const SizedBox(height: 4),
-              if (isLocked)
-                const Icon(Icons.lock, color: Colors.white, size: 18),
-              const SizedBox(height: 4),
-              Text(
-                title,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
+        child: Stack(
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                image: DecorationImage(
+                  image: NetworkImage(image),
+                  fit: BoxFit.cover,
+                  colorFilter: ColorFilter.mode(
+                    Colors.black.withOpacity(0.4),
+                    BlendMode.darken,
+                  ),
                 ),
               ),
-              Text(
-                subtitle,
-                style: const TextStyle(color: Colors.grey, fontSize: 12),
+            ),
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                gradient: LinearGradient(
+                  colors: [Colors.transparent, Colors.black.withOpacity(0.7)],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
               ),
-            ],
-          ),
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildTag(
+                    tag,
+                    tag == 'PREMIUM',
+                    tag == 'PREMIUM'
+                        ? const LinearGradient(
+                            colors: [Color(0xFFFFD700), Color(0xFFFF8C00)],
+                          )
+                        : const LinearGradient(
+                            colors: [Color(0xFF4CAF50), Color(0xFF45A049)],
+                          ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(color: Colors.white70, fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  // --- Timer Card ---
-  Widget _timerCard(BuildContext context, Color accent) {
+  Widget _buildTimerCard(context) {
     return HoverCard(
       onTap: () {
         Navigator.push(
@@ -364,45 +473,77 @@ class SelfDefensePage extends StatelessWidget {
         );
       },
       child: Container(
-        width: 160,
+        width: 170,
         height: 160,
         decoration: BoxDecoration(
-          color: Colors.grey.shade900,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: accent, width: 1.5),
-        ),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.timer, color: accent, size: 40),
-              const SizedBox(height: 8),
-              const Text(
-                'Round Timer',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                ),
-              ),
-              const Text(
-                'For freestyle defense',
-                style: TextStyle(color: Colors.grey, fontSize: 12),
-              ),
-            ],
+          gradient: const LinearGradient(
+            colors: [Color(0xFF1A1F38), Color(0xFF0A0E21)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF2193B0).withOpacity(0.3),
+              blurRadius: 20,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF2193B0), Color(0xFF6DD5ED)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF2193B0).withOpacity(0.4),
+                    blurRadius: 10,
+                    spreadRadius: 2,
+                  ),
+                ],
+              ),
+              child: const Icon(Icons.timer, color: Colors.white, size: 30),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Round Timer',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+            const Text(
+              'For freestyle defense',
+              style: TextStyle(color: Colors.white70, fontSize: 12),
+              textAlign: TextAlign.center,
+            ),
+          ],
         ),
       ),
     );
   }
 
-  // --- Tag Widget ---
-  Widget _buildTag(String text, bool isPremium, Color bg, {Color? textColor}) {
+  Widget _buildTag(
+    String text,
+    bool isPremium,
+    Gradient gradient, {
+    Color? textColor,
+  }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: isPremium ? bg : Colors.green,
-        borderRadius: BorderRadius.circular(6),
+        gradient: gradient,
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
         text,
