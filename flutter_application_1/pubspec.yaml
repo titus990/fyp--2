@@ -38,6 +38,10 @@ dependencies:
   firebase_core: ^4.2.1
   firebase_auth: ^6.1.1
   firebase_core_dart: ^1.0.1
+  firebase_storage: ^13.0.4
+  firebase_ui_firestore: ^2.0.1
+  video_player_avplay: ^0.7.4
+  chewie_audio: ^1.5.0
 
 dev_dependencies:
   flutter_test:
