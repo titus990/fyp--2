@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "234499502169",
+    "project_id": "strikeforce-938e1",
+    "storage_bucket": "strikeforce-938e1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:234499502169:android:af54b8b81bdf453aeb4148",
+        "android_client_info": {
+          "package_name": "com.example.flutter_application_1"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "234499502169-ocelasnbpbkbepe31n8qg9v5iqbpvlq1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCdLONKh8VPfBoxnAToDDb8u-ssptqpj2s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "234499502169-ocelasnbpbkbepe31n8qg9v5iqbpvlq1.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

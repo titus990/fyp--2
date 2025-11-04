@@ -226,7 +226,6 @@ class _BoxingPageState extends State<BoxingPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Popular Workouts Section
                   _buildSectionTitle('Popular Workouts'),
                   const SizedBox(height: 16),
                   SizedBox(
@@ -240,7 +239,7 @@ class _BoxingPageState extends State<BoxingPage> {
                           rating: '4.9 / 5',
                           type: 'Boxing',
                           image:
-                              'https://img.freepik.com/free-photo/boxer-punching-bag_23-2148182371.jpg',
+                              'https://www.freepik.com/free-vector/flat-design-gym-fitness-illustration_36087511.htm#fromView=search&page=1&position=0&uuid=33de6204-8e59-4a35-8237-8830d8aa9a47&query=boxing+punching',
                           onTap: () =>
                               openWorkout('Heavy Bag Combinations', false),
                         ),
@@ -250,7 +249,7 @@ class _BoxingPageState extends State<BoxingPage> {
                           rating: '4.7 / 5',
                           type: 'Boxing',
                           image:
-                              'https://img.freepik.com/free-photo/boxer-training-gym_23-2148178091.jpg',
+                              'https://www.freepik.com/free-ai-image/model-wearing-beautiful-shade-clothing_187183824.htm#fromView=search&page=1&position=0&uuid=f90bfe30-235e-45de-801e-972034900636&query=man+running',
                           onTap: () =>
                               openWorkout('Speed & Endurance Rounds', true),
                           isPremium: true,
@@ -260,7 +259,6 @@ class _BoxingPageState extends State<BoxingPage> {
                   ),
                   const SizedBox(height: 30),
 
-                  // Combine Your Training Section
                   _buildSectionTitle('Combine Your Training'),
                   const SizedBox(height: 16),
                   Row(

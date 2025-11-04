@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/hover_card.dart';
 import '../widgets/workout_detail.dart';
-import '../widgets/timer_page.dart';
 
 class SelfDefensePage extends StatelessWidget {
   const SelfDefensePage({super.key});
@@ -457,75 +456,6 @@ class SelfDefensePage extends StatelessWidget {
                   ),
                 ],
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTimerCard(context) {
-    return HoverCard(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const TimerPage()),
-        );
-      },
-      child: Container(
-        width: 170,
-        height: 160,
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF1A1F38), Color(0xFF0A0E21)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF2193B0).withOpacity(0.3),
-              blurRadius: 20,
-              offset: const Offset(0, 5),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 60,
-              height: 60,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF2193B0), Color(0xFF6DD5ED)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF2193B0).withOpacity(0.4),
-                    blurRadius: 10,
-                    spreadRadius: 2,
-                  ),
-                ],
-              ),
-              child: const Icon(Icons.timer, color: Colors.white, size: 30),
-            ),
-            const SizedBox(height: 12),
-            const Text(
-              'Round Timer',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
-            ),
-            const Text(
-              'For freestyle defense',
-              style: TextStyle(color: Colors.white70, fontSize: 12),
-              textAlign: TextAlign.center,
             ),
           ],
         ),
