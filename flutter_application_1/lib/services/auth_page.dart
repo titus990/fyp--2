@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/main.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class AuthPage extends StatefulWidget {
   const AuthPage({super.key});
@@ -9,11 +11,27 @@ class AuthPage extends StatefulWidget {
   State<AuthPage> createState() => _AuthPageState();
 }
 
+Future<void> addUserToPythonServer(String email, String role) async {
+  final url = Uri.parse('http://127.0.0.1:8000/add_user');
+  final response = await http.post(
+    url,
+    headers: {"Content-Type": "application/json"},
+    body: jsonEncode({"email": email, "role": role}),
+  );
+
+  if (response.statusCode == 200) {
+    print("User sent successfully: ${response.body}");
+  } else {
+    throw Exception('Failed to add user to server: ${response.statusCode}');
+  }
+}
+
 class _AuthPageState extends State<AuthPage> {
   final _auth = FirebaseAuth.instance;
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+
   bool _isLogin = true;
   String? _errorMessage;
   bool _isLoading = false;
@@ -133,7 +151,7 @@ class _AuthPageState extends State<AuthPage> {
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.red.withOpacity(0.4),
+                        color: Colors.red,
                         blurRadius: 20,
                         spreadRadius: 2,
                       ),
@@ -175,7 +193,7 @@ class _AuthPageState extends State<AuthPage> {
                     width: double.infinity,
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.redAccent.withOpacity(0.1),
+                      color: Colors.redAccent,
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(color: Colors.redAccent),
                     ),

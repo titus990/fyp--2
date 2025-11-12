@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'dart:async';
 import '../widgets/hover_card.dart';
 import '../widgets/workout_detail.dart';
+import '../widgets/timer_page.dart';
+import '../widgets/video_player_page.dart';
 
 class BoxingPage extends StatefulWidget {
   const BoxingPage({super.key});
@@ -11,109 +12,20 @@ class BoxingPage extends StatefulWidget {
 }
 
 class _BoxingPageState extends State<BoxingPage> {
-  bool isRunning = false;
-  int seconds = 180;
-  Timer? timer;
-  int restInterval = 30;
-  int repeatCount = 3;
-
-  void startTimer() {
-    if (isRunning) return;
-    setState(() => isRunning = true);
-    timer = Timer.periodic(const Duration(seconds: 1), (t) {
-      setState(() {
-        if (seconds > 0) {
-          seconds--;
-        } else {
-          t.cancel();
-          isRunning = false;
-          showRestDialog();
-        }
-      });
-    });
-  }
-
-  void showRestDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF1A1F38),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text(
-          'Rest Interval',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        content: Text(
-          'Take a ${restInterval}s break before your next round.',
-          style: const TextStyle(color: Colors.white70),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              startNextRound();
-            },
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFFFF416C), Color(0xFFFF4B2B)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(15),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              child: const Text(
-                'Next Round',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void startNextRound() {
-    if (repeatCount > 1) {
-      setState(() {
-        repeatCount--;
-        seconds = 180;
-      });
-      startTimer();
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text("Workout complete! 🥊 Great job champ!"),
-          backgroundColor: Colors.green,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
+  void openWorkout(String title, bool isPremium) {
+    if (title == 'Heavy Bag Combinations') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const VideoPlayerPage(
+            videoPath: 'assets/heavy_bag.mp4',
+            title: 'Heavy Bag Combinations',
           ),
         ),
       );
+      return;
     }
-  }
 
-  void resetTimer() {
-    timer?.cancel();
-    setState(() {
-      isRunning = false;
-      seconds = 180;
-      repeatCount = 3;
-    });
-  }
-
-  String formatTime(int totalSeconds) {
-    final min = (totalSeconds ~/ 60).toString().padLeft(2, '0');
-    final sec = (totalSeconds % 60).toString().padLeft(2, '0');
-    return "$min:$sec";
-  }
-
-  void openWorkout(String title, bool isPremium) {
     if (isPremium) {
       showDialog(
         context: context,
@@ -167,6 +79,13 @@ class _BoxingPageState extends State<BoxingPage> {
         ),
       );
     }
+  }
+
+  void openTimerPage() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const TimerPage()),
+    );
   }
 
   @override
@@ -238,8 +157,7 @@ class _BoxingPageState extends State<BoxingPage> {
                           duration: '45 MIN',
                           rating: '4.9 / 5',
                           type: 'Boxing',
-                          image:
-                              'https://www.freepik.com/free-vector/flat-design-gym-fitness-illustration_36087511.htm#fromView=search&page=1&position=0&uuid=33de6204-8e59-4a35-8237-8830d8aa9a47&query=boxing+punching',
+                          image: 'assets/boxing.png',
                           onTap: () =>
                               openWorkout('Heavy Bag Combinations', false),
                         ),
@@ -248,8 +166,7 @@ class _BoxingPageState extends State<BoxingPage> {
                           duration: '30 MIN',
                           rating: '4.7 / 5',
                           type: 'Boxing',
-                          image:
-                              'https://www.freepik.com/free-ai-image/model-wearing-beautiful-shade-clothing_187183824.htm#fromView=search&page=1&position=0&uuid=f90bfe30-235e-45de-801e-972034900636&query=man+running',
+                          image: 'assets/boxing.png',
                           onTap: () =>
                               openWorkout('Speed & Endurance Rounds', true),
                           isPremium: true,
@@ -292,8 +209,6 @@ class _BoxingPageState extends State<BoxingPage> {
                     ],
                   ),
                   const SizedBox(height: 30),
-
-                  // Learn Section
                   _buildSectionTitle('Learn'),
                   const SizedBox(height: 16),
                   _buildLearnCard(
@@ -305,7 +220,6 @@ class _BoxingPageState extends State<BoxingPage> {
                   ),
                   const SizedBox(height: 30),
 
-                  // Timer Section
                   _buildSectionTitle('Freestyle Timer'),
                   const SizedBox(height: 16),
                   _buildTimerCard(),
@@ -352,7 +266,14 @@ class _BoxingPageState extends State<BoxingPage> {
         margin: const EdgeInsets.only(right: 16),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
-          image: DecorationImage(image: NetworkImage(image), fit: BoxFit.cover),
+          image: DecorationImage(
+            image: NetworkImage(image),
+            fit: BoxFit.cover,
+            colorFilter: ColorFilter.mode(
+              Colors.black.withOpacity(0.3),
+              BlendMode.darken,
+            ),
+          ),
         ),
         child: Container(
           decoration: BoxDecoration(
@@ -543,7 +464,14 @@ class _BoxingPageState extends State<BoxingPage> {
         height: 160,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
-          image: DecorationImage(image: NetworkImage(image), fit: BoxFit.cover),
+          image: DecorationImage(
+            image: NetworkImage(image),
+            fit: BoxFit.cover,
+            colorFilter: ColorFilter.mode(
+              Colors.black.withOpacity(0.3),
+              BlendMode.darken,
+            ),
+          ),
         ),
         child: Container(
           decoration: BoxDecoration(
@@ -604,129 +532,80 @@ class _BoxingPageState extends State<BoxingPage> {
   }
 
   Widget _buildTimerCard() {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF1A1F38), Color(0xFF0A0E21)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+    return HoverCard(
+      onTap: openTimerPage,
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF1A1F38), Color(0xFF0A0E21)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.red.withOpacity(0.3),
+              blurRadius: 20,
+              offset: const Offset(0, 5),
+            ),
+          ],
         ),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.red.withOpacity(0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        children: [
-          const Text(
-            'Round Timer',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: const LinearGradient(
-                colors: [Color(0xFFFF416C), Color(0xFFFF4B2B)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.red.withOpacity(0.4),
-                  blurRadius: 15,
-                  spreadRadius: 2,
-                ),
-              ],
-            ),
-            child: Text(
-              formatTime(seconds),
-              style: const TextStyle(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          children: [
+            const Text(
+              'Advanced Round Timer',
+              style: TextStyle(
                 color: Colors.white,
-                fontSize: 42,
+                fontSize: 22,
                 fontWeight: FontWeight.bold,
-                fontFamily: 'Monospace',
               ),
             ),
-          ),
-          const SizedBox(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildTimerButton(
-                onPressed: isRunning ? null : startTimer,
-                text: 'Start',
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFFF416C), Color(0xFFFF4B2B)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.red.withOpacity(0.4),
+                    blurRadius: 15,
+                    spreadRadius: 2,
+                  ),
+                ],
+              ),
+              child: const Icon(Icons.timer, color: Colors.white, size: 50),
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              'Freestyle',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.white70, fontSize: 14),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              decoration: BoxDecoration(
                 gradient: const LinearGradient(
                   colors: [Color(0xFF4CAF50), Color(0xFF45A049)],
                 ),
+                borderRadius: BorderRadius.circular(15),
               ),
-              const SizedBox(width: 16),
-              _buildTimerButton(
-                onPressed: resetTimer,
-                text: 'Reset',
-                gradient: const LinearGradient(
-                  colors: [Color(0xFFFF416C), Color(0xFFFF4B2B)],
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              child: const Text(
+                'Open Timer',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Rest: $restInterval sec | Rounds Left: $repeatCount',
-            style: const TextStyle(color: Colors.white70, fontSize: 16),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTimerButton({
-    required VoidCallback? onPressed,
-    required String text,
-    required Gradient gradient,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: onPressed == null
-            ? const LinearGradient(colors: [Colors.grey, Colors.grey])
-            : gradient,
-        borderRadius: BorderRadius.circular(15),
-        boxShadow: onPressed == null
-            ? null
-            : [
-                BoxShadow(
-                  color: gradient.colors.first.withOpacity(0.4),
-                  blurRadius: 10,
-                  offset: const Offset(0, 3),
-                ),
-              ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onPressed,
-          borderRadius: BorderRadius.circular(15),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            child: Text(
-              text,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
               ),
             ),
-          ),
+          ],
         ),
       ),
     );

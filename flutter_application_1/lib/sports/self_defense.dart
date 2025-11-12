@@ -104,7 +104,7 @@ class SelfDefensePage extends StatelessWidget {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
@@ -115,13 +115,13 @@ class SelfDefensePage extends StatelessWidget {
               onPressed: () => Navigator.pop(context),
             ),
           ),
+
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Popular Self-Defense Drills Section
                   _buildSectionTitle('Popular Self-Defense Drills'),
                   const SizedBox(height: 16),
                   SizedBox(
@@ -136,8 +136,7 @@ class SelfDefensePage extends StatelessWidget {
                           tag: 'FREE',
                           time: '15 MIN',
                           isPremium: false,
-                          image:
-                              'https://images.unsplash.com/photo-1604068549290-dea0e4a305ca',
+                          image: 'assets/boxing.png',
                           onTap: () =>
                               openWorkout('Escape from wrist grab', false),
                         ),
@@ -148,8 +147,7 @@ class SelfDefensePage extends StatelessWidget {
                           tag: 'PREMIUM',
                           time: '25 MIN',
                           isPremium: true,
-                          image:
-                              'https://images.unsplash.com/photo-1605296867304-46d5465a13f1',
+                          image: 'assets/choke_hold.png',
                           onTap: () =>
                               openWorkout('Defend against choke hold', true),
                         ),
@@ -160,8 +158,7 @@ class SelfDefensePage extends StatelessWidget {
                           tag: 'FREE',
                           time: '20 MIN',
                           isPremium: false,
-                          image:
-                              'https://images.unsplash.com/photo-1590080875831-bc93c6c66f93',
+                          image: 'assets/ground_defense.png',
                           onTap: () =>
                               openWorkout('Ground defense fundamentals', false),
                         ),
@@ -170,7 +167,6 @@ class SelfDefensePage extends StatelessWidget {
                   ),
                   const SizedBox(height: 30),
 
-                  // Combine Your Training Section
                   _buildSectionTitle('Combine Your Training'),
                   const SizedBox(height: 16),
                   Row(
@@ -180,8 +176,7 @@ class SelfDefensePage extends StatelessWidget {
                         title: 'Scenario Drills',
                         subtitle: 'Simulate real-life attacks',
                         tag: 'PREMIUM',
-                        image:
-                            'https://images.unsplash.com/photo-1598970434795-0c54fe7c0642',
+                        image: 'assets/scenario_drill.png',
                         onTap: () => openWorkout('Scenario Drills', true),
                         gradient: const LinearGradient(
                           colors: [Color(0xFF2193B0), Color(0xFF6DD5ED)],
@@ -193,8 +188,7 @@ class SelfDefensePage extends StatelessWidget {
                         title: 'Partner Practice',
                         subtitle: 'Team up for resistance drills',
                         tag: 'PREMIUM',
-                        image:
-                            'https://images.unsplash.com/photo-1573497491208-6b1acb260507',
+                        image: 'assets/partner_practice.png',
                         onTap: () => openWorkout('Partner Practice', true),
                         gradient: const LinearGradient(
                           colors: [Color(0xFFFF416C), Color(0xFFFF4B2B)],
@@ -206,7 +200,6 @@ class SelfDefensePage extends StatelessWidget {
                   ),
                   const SizedBox(height: 30),
 
-                  // Learn & Awareness Section
                   _buildSectionTitle('Learn & Awareness'),
                   const SizedBox(height: 16),
                   Row(
@@ -216,8 +209,7 @@ class SelfDefensePage extends StatelessWidget {
                         title: 'Basic Defense Guide',
                         subtitle: 'Learn key body mechanics',
                         tag: 'FREE',
-                        image:
-                            'https://images.unsplash.com/photo-1576678927484-cc907957088c',
+                        image: 'assets/self_defense.png',
                         onTap: () => openWorkout('Basic Defense Guide', false),
                         gradient: const LinearGradient(
                           colors: [Color(0xFF4CAF50), Color(0xFF45A049)],
@@ -229,8 +221,7 @@ class SelfDefensePage extends StatelessWidget {
                         title: 'Street Awareness',
                         subtitle: 'Recognize threats early',
                         tag: 'FREE',
-                        image:
-                            'https://images.unsplash.com/photo-1573496529574-be85d6a60704',
+                        image: 'assets/street_awareness.png',
                         onTap: () => openWorkout('Street Awareness', false),
                         gradient: const LinearGradient(
                           colors: [Color(0xFFFF8C00), Color(0xFFFFD700)],
@@ -242,7 +233,6 @@ class SelfDefensePage extends StatelessWidget {
                   ),
                   const SizedBox(height: 30),
 
-                  // Freestyle Section
                   _buildSectionTitle('Freestyle'),
                   const SizedBox(height: 16),
                   Row(
@@ -252,8 +242,7 @@ class SelfDefensePage extends StatelessWidget {
                         title: 'Custom Routine',
                         subtitle: 'Create your own flow',
                         tag: 'PREMIUM',
-                        image:
-                            'https://images.unsplash.com/photo-1581291518835-42c67c5a99d9',
+                        image: 'assets/custom_routine.png',
                         onTap: () => openWorkout('Custom Routine', true),
                         gradient: const LinearGradient(
                           colors: [Color(0xFF2193B0), Color(0xFF6DD5ED)],
@@ -308,13 +297,13 @@ class SelfDefensePage extends StatelessWidget {
         margin: const EdgeInsets.only(right: 16),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
-          image: DecorationImage(image: NetworkImage(image), fit: BoxFit.cover),
+          image: DecorationImage(image: AssetImage(image), fit: BoxFit.cover),
         ),
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
             gradient: LinearGradient(
-              colors: [Colors.black.withOpacity(0.8), Colors.transparent],
+              colors: [Colors.black.withValues(alpha: 0.8), Colors.transparent],
               begin: Alignment.bottomCenter,
               end: Alignment.topCenter,
             ),
@@ -407,10 +396,10 @@ class SelfDefensePage extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
                 image: DecorationImage(
-                  image: NetworkImage(image),
+                  image: AssetImage(image),
                   fit: BoxFit.cover,
                   colorFilter: ColorFilter.mode(
-                    Colors.black.withOpacity(0.4),
+                    Colors.black.withValues(alpha: 0.4),
                     BlendMode.darken,
                   ),
                 ),
@@ -420,7 +409,10 @@ class SelfDefensePage extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
                 gradient: LinearGradient(
-                  colors: [Colors.transparent, Colors.black.withOpacity(0.7)],
+                  colors: [
+                    Colors.transparent,
+                    Colors.black.withValues(alpha: 0.7),
+                  ],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                 ),

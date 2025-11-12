@@ -11,11 +11,10 @@ class KickBoxingPage extends StatefulWidget {
 }
 
 class _KickBoxingPageState extends State<KickBoxingPage> {
-  // Timer state
   bool isRunning = false;
-  int seconds = 180; // 3-minute round
+  int seconds = 180;
   Timer? timer;
-  int restInterval = 30; // 30 seconds rest
+  int restInterval = 30;
   int repeatCount = 3;
 
   void startTimer() {
@@ -210,7 +209,7 @@ class _KickBoxingPageState extends State<KickBoxingPage> {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
@@ -227,7 +226,6 @@ class _KickBoxingPageState extends State<KickBoxingPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Popular Workouts Section
                   _buildSectionTitle('Popular Workouts'),
                   const SizedBox(height: 16),
                   SizedBox(
@@ -298,7 +296,6 @@ class _KickBoxingPageState extends State<KickBoxingPage> {
                   ),
                   const SizedBox(height: 30),
 
-                  // Learn Section
                   _buildSectionTitle('Learn'),
                   const SizedBox(height: 16),
                   _buildLearnCard(
@@ -311,7 +308,6 @@ class _KickBoxingPageState extends State<KickBoxingPage> {
                   ),
                   const SizedBox(height: 30),
 
-                  // Timer Section
                   _buildSectionTitle('Freestyle'),
                   const SizedBox(height: 16),
                   _buildTimerCard(),
@@ -364,7 +360,7 @@ class _KickBoxingPageState extends State<KickBoxingPage> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
             gradient: LinearGradient(
-              colors: [Colors.black.withOpacity(0.8), Colors.transparent],
+              colors: [Colors.black.withValues(alpha: 0.8), Colors.transparent],
               begin: Alignment.bottomCenter,
               end: Alignment.topCenter,
             ),
@@ -408,7 +404,7 @@ class _KickBoxingPageState extends State<KickBoxingPage> {
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
@@ -483,7 +479,7 @@ class _KickBoxingPageState extends State<KickBoxingPage> {
                   image: NetworkImage(image),
                   fit: BoxFit.cover,
                   colorFilter: ColorFilter.mode(
-                    Colors.black.withOpacity(0.4),
+                    Colors.black.withValues(alpha: 0.4),
                     BlendMode.darken,
                   ),
                 ),
@@ -493,7 +489,10 @@ class _KickBoxingPageState extends State<KickBoxingPage> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
                 gradient: LinearGradient(
-                  colors: [Colors.transparent, Colors.black.withOpacity(0.7)],
+                  colors: [
+                    Colors.transparent,
+                    Colors.black.withValues(alpha: 0.7),
+                  ],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                 ),
@@ -507,7 +506,7 @@ class _KickBoxingPageState extends State<KickBoxingPage> {
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha: 0.2),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
@@ -557,7 +556,7 @@ class _KickBoxingPageState extends State<KickBoxingPage> {
             gradient: LinearGradient(
               colors: [
                 Colors.transparent,
-                const Color(0xFF1A1F38).withOpacity(0.9),
+                const Color(0xFF1A1F38).withValues(alpha: 0.9),
               ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
@@ -620,7 +619,7 @@ class _KickBoxingPageState extends State<KickBoxingPage> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.orange.withOpacity(0.3),
+            color: Colors.orange.withValues(alpha: 0.3),
             blurRadius: 20,
             offset: const Offset(0, 5),
           ),
@@ -649,7 +648,7 @@ class _KickBoxingPageState extends State<KickBoxingPage> {
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.orange.withOpacity(0.4),
+                  color: Colors.orange.withValues(alpha: 0.4),
                   blurRadius: 15,
                   spreadRadius: 2,
                 ),
@@ -711,7 +710,7 @@ class _KickBoxingPageState extends State<KickBoxingPage> {
             ? null
             : [
                 BoxShadow(
-                  color: gradient.colors.first.withOpacity(0.4),
+                  color: gradient.colors.first.withValues(alpha: 0.4),
                   blurRadius: 10,
                   offset: const Offset(0, 3),
                 ),
