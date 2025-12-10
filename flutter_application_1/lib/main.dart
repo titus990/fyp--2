@@ -6,6 +6,8 @@ import 'sports/boxing_page.dart';
 import 'sports/kick_boxing.dart';
 import 'sports/self_defense.dart';
 import 'services/auth_page.dart';
+import 'services/admin_service.dart';
+import 'admin/admin_dashboard.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -42,6 +44,7 @@ class StrikeForceApp extends StatelessWidget {
         '/boxing': (context) => const BoxingPage(),
         '/selfdefense': (context) => const SelfDefensePage(),
         '/kickboxing': (context) => const KickBoxingPage(),
+        '/admin': (context) => const AdminDashboard(),
       },
     );
   }
@@ -143,8 +146,21 @@ class WelcomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
 
-    return Scaffold(
-      backgroundColor: const Color(0xFF0A0E21),
+    return FutureBuilder<bool>(
+      future: AdminService().isAdmin(),
+      builder: (context, snapshot) {
+        final isAdmin = snapshot.data ?? false;
+
+        return Scaffold(
+          backgroundColor: const Color(0xFF0A0E21),
+          floatingActionButton: isAdmin
+              ? FloatingActionButton.extended(
+                  onPressed: () => Navigator.pushNamed(context, '/admin'),
+                  label: const Text('Admin Panel'),
+                  icon: const Icon(Icons.admin_panel_settings),
+                  backgroundColor: Colors.redAccent,
+                )
+              : null,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -364,6 +380,8 @@ class WelcomePage extends StatelessWidget {
           ),
         ),
       ),
+    );
+      },
     );
   }
 }

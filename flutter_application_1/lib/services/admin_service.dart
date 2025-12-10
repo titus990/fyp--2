@@ -35,4 +35,19 @@ class AdminService {
       await setUserRole(user.uid, 'admin');
     }
   }
+
+  // Get all users stream for Admin Panel
+  Stream<QuerySnapshot> getAllUsers() {
+    return _firestore.collection('users').orderBy('createdAt', descending: true).snapshots();
+  }
+
+  // Update user details (e.g. role, name - though name is usually in profile)
+  Future<void> updateUserDetails(String userId, Map<String, dynamic> data) async {
+    await _firestore.collection('users').doc(userId).update(data);
+  }
+
+  // Delete user (Firestore only) - Note: Auth deletion requires backend/admin SDK
+  Future<void> deleteUser(String userId) async {
+    await _firestore.collection('users').doc(userId).delete();
+  }
 }
