@@ -1,0 +1,55 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper function to check if the current user is an admin
+    // Fetches the user's document to check the 'role' field
+    function isAdmin() {
+      return request.auth != null &&
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Helper function to check if the user is accessing their own data
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    // USERS COLLECTION
+    // ----------------
+    match /users/{userId} {
+      // READ: Users can read their own profile. Admins can read everyone.
+      allow read: if isOwner(userId) || isAdmin();
+      
+      // CREATE: Users can create their own profile on sign-up. 
+      // Admins can create users (though normally handled via Auth).
+      allow create: if isOwner(userId) || isAdmin();
+      
+      // UPDATE: Users can update their own data (e.g., lastActive). 
+      // Admins can update any user (e.g., changing roles).
+      allow update: if isOwner(userId) || isAdmin();
+      
+      // DELETE: Only Admins can delete users.
+      allow delete: if isAdmin();
+
+      // HISTORY SUBCOLLECTION
+      // ---------------------
+      // Stores workout progress and stats
+      match /history/{activityId} {
+        // Users can read/write their own workout history.
+        // Admins can view/delete user history (cascading delete).
+        allow read, write: if isOwner(userId) || isAdmin();
+      }
+    }
+
+    // COACHES COLLECTION
+    // ------------------
+    match /coaches/{coachId} {
+      // READ: Any authenticated user (Client or Admin) can view coaches.
+      allow read: if request.auth != null;
+      
+      // WRITE: Only Admins can add, update, or remove coaches.
+      allow write: if isAdmin();
+    }
+  }
+}

@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/main.dart';
+import 'package:flutter_application_1/services/admin_service.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -53,23 +54,12 @@ class _AuthPageState extends State<AuthPage> {
 
     try {
       if (_isLogin) {
-        // [MODIFIED] Handle custom admin credential
-        String processedEmail = _emailController.text.trim();
-        String processedPassword = _passwordController.text.trim();
-
-        if (processedEmail == 'admin' && processedPassword == 'admin123') {
-          // Map to a real email format for Firebase Auth or use a specific pre-created admin account
-          // Since we can't create a non-email user in Firebase easily without custom auth,
-          // we will try to sign in with a reserved admin email.
-          // IF this account doesn't exist, we should probably create it or fail gracefully.
-          // For this specific request, let's assume 'admin@strikeforce.com' is the backing email.
-          processedEmail = 'admin@strikeforce.com';
-        }
-
         await _auth.signInWithEmailAndPassword(
-          email: processedEmail,
-          password: processedPassword,
+          email: _emailController.text.trim(),
+          password: _passwordController.text.trim(),
         );
+
+        await AdminService().updateLastActive();
       } else {
         if (_passwordController.text != _confirmPasswordController.text) {
           setState(() {
@@ -85,23 +75,21 @@ class _AuthPageState extends State<AuthPage> {
           return;
         }
 
-        UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
-          email: _emailController.text.trim(),
-          password: _passwordController.text.trim(),
-        );
+        UserCredential userCredential = await _auth
+            .createUserWithEmailAndPassword(
+              email: _emailController.text.trim(),
+              password: _passwordController.text.trim(),
+            );
 
-        // [NEW] Create User Document in Firestore
-        // We do this to assign a default role 'client'.
-        // This is crucial for the Admin Panel to function (it needs to query 'role').
         if (userCredential.user != null) {
           await FirebaseFirestore.instance
               .collection('users')
               .doc(userCredential.user!.uid)
               .set({
-            'email': _emailController.text.trim(),
-            'role': 'client', // Default role
-            'createdAt': FieldValue.serverTimestamp(),
-          });
+                'email': _emailController.text.trim(),
+                'role': 'client', // Default role
+                'createdAt': FieldValue.serverTimestamp(),
+              });
         }
       }
     } on FirebaseAuthException catch (e) {
@@ -109,38 +97,63 @@ class _AuthPageState extends State<AuthPage> {
       switch (e.code) {
         case 'invalid-email':
           errorMessage = 'Invalid email address';
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Invalid email address. Please check and try again.'),
+                backgroundColor: Colors.red,
+                duration: Duration(seconds: 3),
+              ),
+            );
+          }
           break;
         case 'user-disabled':
           errorMessage = 'This user has been disabled';
           break;
         case 'user-not-found':
-          // If admin@strikeforce.com not found, we might want to auto-create it for the user
-          if (_emailController.text.trim() == 'admin') {
-             try {
-                // Auto-create the admin user if it doesn't exist (First run hack)
-                UserCredential adminCred = await _auth.createUserWithEmailAndPassword(
-                  email: 'admin@strikeforce.com', 
-                  password: 'admin123'
-                );
-                await FirebaseFirestore.instance
+          if (_emailController.text.trim() == 'admin@gmail.com') {
+            try {
+              UserCredential adminCred = await _auth
+                  .createUserWithEmailAndPassword(
+                    email: 'admin@gmail.com',
+                    password: 'admin123',
+                  );
+              await FirebaseFirestore.instance
                   .collection('users')
                   .doc(adminCred.user!.uid)
                   .set({
-                    'email': 'admin@strikeforce.com',
+                    'email': 'admin@gmail.com',
                     'role': 'admin',
                     'createdAt': FieldValue.serverTimestamp(),
-                });
-                return; // Succesfully created and logged in (auth state change handles nav)
-             } catch (createError) {
-                errorMessage = 'Failed to initialize admin account: $createError';
-             }
-             errorMessage = 'Admin account initialized. Please try logging in again.'; // Should not be reached with return above
+                  });
+              return;
+            } catch (createError) {
+              errorMessage = 'Failed to initialize admin account: $createError';
+            }
           } else {
-             errorMessage = 'No user found with this email';
+            errorMessage = 'No user found with this email';
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('No account found with this email. Please check your email or sign up.'),
+                  backgroundColor: Colors.red,
+                  duration: Duration(seconds: 3),
+                ),
+              );
+            }
           }
           break;
         case 'wrong-password':
           errorMessage = 'Incorrect password';
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Incorrect password. Please try again.'),
+                backgroundColor: Colors.red,
+                duration: Duration(seconds: 3),
+              ),
+            );
+          }
           break;
         case 'email-already-in-use':
           errorMessage = 'An account already exists with this email';
@@ -238,7 +251,6 @@ class _AuthPageState extends State<AuthPage> {
                 ),
                 const SizedBox(height: 40),
 
-                // Error Message
                 if (_errorMessage != null)
                   Container(
                     width: double.infinity,
@@ -252,14 +264,13 @@ class _AuthPageState extends State<AuthPage> {
                       _errorMessage!,
                       textAlign: TextAlign.center,
                       style: const TextStyle(
-                        color: Colors.redAccent,
+                        color: Colors.white,
                         fontSize: 14,
                       ),
                     ),
                   ),
                 if (_errorMessage != null) const SizedBox(height: 20),
 
-                // Email Field
                 TextField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
@@ -268,7 +279,6 @@ class _AuthPageState extends State<AuthPage> {
                 ),
                 const SizedBox(height: 15),
 
-                // Password Field
                 TextField(
                   controller: _passwordController,
                   obscureText: true,
@@ -276,8 +286,6 @@ class _AuthPageState extends State<AuthPage> {
                   decoration: _inputDecoration('Password', Icons.lock),
                 ),
                 const SizedBox(height: 15),
-
-                // Confirm Password Field (only for sign up)
                 if (!_isLogin)
                   Column(
                     children: [
@@ -327,8 +335,6 @@ class _AuthPageState extends State<AuthPage> {
                         ),
                       ),
                 const SizedBox(height: 20),
-
-                // Toggle between Login and Sign Up
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -357,7 +363,6 @@ class _AuthPageState extends State<AuthPage> {
                   ],
                 ),
 
-                // Forgot Password (only for login)
                 if (_isLogin) ...[
                   const SizedBox(height: 20),
                   TextButton(

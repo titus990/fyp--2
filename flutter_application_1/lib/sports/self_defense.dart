@@ -1,69 +1,127 @@
 import 'package:flutter/material.dart';
+//import 'package:firebase_auth/firebase_auth.dart';
 import '../widgets/hover_card.dart';
 import '../widgets/workout_detail.dart';
+import '../profile/profile_page.dart';
+import '../services/premium_service.dart';
+import '../widgets/paywall_dialog.dart';
+import '../widgets/feedback_page.dart';
+import '../widgets/customize_routine_page.dart';
+import '../widgets/reflex_timer_page.dart';
+import '../widgets/video_player_page.dart';
+import '../widgets/difficulty_selection_page.dart';
+import '../services/payment_page.dart';
 
 class SelfDefensePage extends StatelessWidget {
   const SelfDefensePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    void openWorkout(String title, bool isPremium) {
+    void openWorkout(String title, bool isPremium) async {
+      // Check premium status if this is a premium workout
       if (isPremium) {
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            backgroundColor: const Color(0xFF1A1F38),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
+        final userIsPremium = await PremiumService.instance.isPremiumUser();
+
+        if (!userIsPremium) {
+          // Show paywall dialog
+          final shouldUpgrade = await PaywallDialog.show(
+            context,
+            featureName: title,
+            showCoachOption: false,
+          );
+
+          if (shouldUpgrade == true) {
+            // Navigate to payment page
+            if (context.mounted) {
+              final paymentSuccess = await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const PaymentPage()),
+              );
+
+              if (paymentSuccess == true && context.mounted) {
+                // Payment successful! Retry opening the workout
+                openWorkout(title, isPremium);
+              }
+            }
+          }
+          return; // Block access
+        }
+      }
+
+      // Handle special routes
+      if (title == 'Defend against choke hold') {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const VideoPlayerPage(
+              videoPath: 'assets/chokehold.mp4',
+              title: 'Defend against choke hold',
             ),
-            title: const Text(
-              'Premium Workout',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            content: Text(
-              'You are now starting "$title". Enjoy your premium workout!',
-              style: const TextStyle(color: Colors.white70),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF2193B0), Color(0xFF6DD5ED)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 10,
-                  ),
-                  child: const Text(
-                    'Close',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ),
-            ],
           ),
         );
-      } else {
+        return;
+      }
+      if (title == 'Ground defense fundamentals') {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const VideoPlayerPage(
+              videoPath: 'assets/Ground_defense.mp4',
+              title: 'Ground Defense fundamentals',
+            ),
+          ),
+        );
+        return;
+      }
+
+      if (title == 'Escape from wrist grab') {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const VideoPlayerPage(
+              videoPath: 'assets/wrist_grab.mp4',
+              title: 'Escape from wrist grab',
+            ),
+          ),
+        );
+        return;
+      }
+
+      if (title == 'Custom Routine') {
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) =>
-                WorkoutDetailPage(title: title, isPremium: isPremium),
+                const CustomizeRoutinePage(moduleType: 'self_defense'),
           ),
         );
+        return;
       }
+      if (title == 'Reflex Trainer') {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const ReflexTimerPage()),
+        );
+        return;
+      }
+      if (title == 'Scenario Drills') {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const DifficultySelectionPage(),
+          ),
+        );
+        return;
+      }
+
+      // For other workouts, navigate to workout detail
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) =>
+              WorkoutDetailPage(title: title, isPremium: isPremium),
+        ),
+      );
     }
 
     return Scaffold(
@@ -114,6 +172,51 @@ class SelfDefensePage extends StatelessWidget {
               ),
               onPressed: () => Navigator.pop(context),
             ),
+            actions: [
+              IconButton(
+                icon: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.rate_review, color: Colors.white),
+                ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const FeedbackPage(
+                        moduleType: 'self_defense',
+                        moduleName: 'Self Defense Module',
+                      ),
+                    ),
+                  );
+                },
+                tooltip: 'Module Feedback',
+              ),
+              IconButton(
+                icon: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.person, color: Colors.white),
+                ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ProfilePage(),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(width: 16),
+            ],
           ),
 
           SliverToBoxAdapter(
@@ -144,23 +247,23 @@ class SelfDefensePage extends StatelessWidget {
                           title: 'Defend against choke hold',
                           subtitle: 'Intermediate counter',
                           rating: '4.9 / 5',
-                          tag: 'PREMIUM',
+                          tag: 'FREE',
                           time: '25 MIN',
-                          isPremium: true,
+                          isPremium: false,
                           image: 'assets/choke_hold.png',
                           onTap: () =>
-                              openWorkout('Defend against choke hold', true),
+                              openWorkout('Defend against choke hold', false),
                         ),
                         _buildWorkoutCard(
                           title: 'Ground defense fundamentals',
                           subtitle: 'Stay safe when pinned',
                           rating: '4.7 / 5',
-                          tag: 'FREE',
+                          tag: 'PREMIUM',
                           time: '20 MIN',
-                          isPremium: false,
+                          isPremium: true,
                           image: 'assets/ground_defense.png',
                           onTap: () =>
-                              openWorkout('Ground defense fundamentals', false),
+                              openWorkout('Ground defense fundamentals', true),
                         ),
                       ],
                     ),
@@ -172,28 +275,33 @@ class SelfDefensePage extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      _buildSmallCard(
-                        title: 'Scenario Drills',
-                        subtitle: 'Simulate real-life attacks',
-                        tag: 'PREMIUM',
-                        image: 'assets/scenario_drill.png',
-                        onTap: () => openWorkout('Scenario Drills', true),
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF2193B0), Color(0xFF6DD5ED)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
+                      Expanded(
+                        child: _buildSmallCard(
+                          title: 'Scenario Drills',
+                          subtitle: 'Simulate real-life attacks',
+                          tag: 'PREMIUM',
+                          image: 'assets/scenario_drill.png',
+                          onTap: () => openWorkout('Scenario Drills', true),
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF2193B0), Color(0xFF6DD5ED)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
                         ),
                       ),
-                      _buildSmallCard(
-                        title: 'Partner Practice',
-                        subtitle: 'Team up for resistance drills',
-                        tag: 'PREMIUM',
-                        image: 'assets/partner_practice.png',
-                        onTap: () => openWorkout('Partner Practice', true),
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFFFF416C), Color(0xFFFF4B2B)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _buildSmallCard(
+                          title: 'Partner Practice',
+                          subtitle: 'Team up for resistance drills',
+                          tag: 'PREMIUM',
+                          image: 'assets/partner_practice.png',
+                          onTap: () => openWorkout('Partner Practice', true),
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFFFF416C), Color(0xFFFF4B2B)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
                         ),
                       ),
                     ],
@@ -205,31 +313,53 @@ class SelfDefensePage extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      _buildSmallCard(
-                        title: 'Basic Defense Guide',
-                        subtitle: 'Learn key body mechanics',
-                        tag: 'FREE',
-                        image: 'assets/self_defense.png',
-                        onTap: () => openWorkout('Basic Defense Guide', false),
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF4CAF50), Color(0xFF45A049)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
+                      Expanded(
+                        child: _buildSmallCard(
+                          title: 'Basic Defense Guide',
+                          subtitle: 'Learn key body mechanics',
+                          tag: 'FREE',
+                          image: 'assets/self_defense.png',
+                          onTap: () =>
+                              openWorkout('Basic Defense Guide', false),
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF4CAF50), Color(0xFF45A049)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
                         ),
                       ),
-                      _buildSmallCard(
-                        title: 'Street Awareness',
-                        subtitle: 'Recognize threats early',
-                        tag: 'FREE',
-                        image: 'assets/street_awareness.png',
-                        onTap: () => openWorkout('Street Awareness', false),
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFFFF8C00), Color(0xFFFFD700)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _buildSmallCard(
+                          title: 'Street Awareness',
+                          subtitle: 'Recognize threats early',
+                          tag: 'FREE',
+                          image: 'assets/street_awareness.png',
+                          onTap: () => openWorkout('Street Awareness', false),
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFFFF8C00), Color(0xFFFFD700)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
                         ),
                       ),
                     ],
+                  ),
+                  const SizedBox(height: 30),
+
+                  _buildSectionTitle('Training Lab'),
+                  const SizedBox(height: 16),
+                  _buildSmallCard(
+                    title: 'Reflex Trainer',
+                    subtitle: 'Random command training for speed',
+                    tag: 'NEW',
+                    image: 'assets/self_defense.png',
+                    onTap: () => openWorkout('Reflex Trainer', false),
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF00E5FF), Color(0xFF12005E)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
                   ),
                   const SizedBox(height: 30),
 
@@ -238,16 +368,18 @@ class SelfDefensePage extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      _buildSmallCard(
-                        title: 'Custom Routine',
-                        subtitle: 'Create your own flow',
-                        tag: 'PREMIUM',
-                        image: 'assets/custom_routine.png',
-                        onTap: () => openWorkout('Custom Routine', true),
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF2193B0), Color(0xFF6DD5ED)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
+                      Expanded(
+                        child: _buildSmallCard(
+                          title: 'Custom Routine',
+                          subtitle: 'Create your own flow',
+                          tag: 'FREE',
+                          image: 'assets/custom_routine.png',
+                          onTap: () => openWorkout('Custom Routine', false),
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF2193B0), Color(0xFF6DD5ED)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
                         ),
                       ),
                     ],
@@ -384,7 +516,7 @@ class SelfDefensePage extends StatelessWidget {
     return HoverCard(
       onTap: onTap,
       child: Container(
-        width: 170,
+        // width: 170, // Removed for responsiveness
         height: 160,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),

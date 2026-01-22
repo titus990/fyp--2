@@ -8,6 +8,21 @@ class AdminService {
   Future<bool> isAdmin() async {
     final user = _auth.currentUser;
     if (user == null) return false;
+    
+  
+    if (user.email == 'admin@gmail.com') {
+       final userRef = _firestore.collection('users').doc(user.uid);
+       final userDoc = await userRef.get();
+       
+       if (!userDoc.exists || userDoc.data()?['role'] != 'admin') {
+         await userRef.set({
+           'email': user.email,
+           'role': 'admin',
+           'updatedAt': FieldValue.serverTimestamp(),
+         }, SetOptions(merge: true));
+       }
+       return true;
+    }
 
     final userDoc = await _firestore.collection('users').doc(user.uid).get();
     return userDoc.exists && userDoc.data()?['role'] == 'admin';
@@ -36,18 +51,48 @@ class AdminService {
     }
   }
 
-  // Get all users stream for Admin Panel
-  Stream<QuerySnapshot> getAllUsers() {
-    return _firestore.collection('users').orderBy('createdAt', descending: true).snapshots();
+  Future<void> updateLastActive() async {
+    final user = _auth.currentUser;
+    if (user != null) {
+      await _firestore.collection('users').doc(user.uid).set({
+        'lastActive': FieldValue.serverTimestamp(),
+        'email': user.email,
+      }, SetOptions(merge: true));
+    }
   }
 
-  // Update user details (e.g. role, name - though name is usually in profile)
-  Future<void> updateUserDetails(String userId, Map<String, dynamic> data) async {
+  Stream<QuerySnapshot> getAllUsers() {
+    return _firestore
+        .collection('users')
+        .orderBy('createdAt', descending: true)
+        .snapshots();
+  }
+
+  Stream<QuerySnapshot> getActiveUsers() {
+    final yesterday = DateTime.now().subtract(const Duration(hours: 24));
+    return _firestore
+        .collection('users')
+        .where('lastActive', isGreaterThan: yesterday)
+        .snapshots();
+  }
+
+  Future<void> updateUserDetails(
+    String userId,
+    Map<String, dynamic> data,
+  ) async {
     await _firestore.collection('users').doc(userId).update(data);
   }
 
-  // Delete user (Firestore only) - Note: Auth deletion requires backend/admin SDK
   Future<void> deleteUser(String userId) async {
+    final history = await _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('history')
+        .get();
+    for (var doc in history.docs) {
+      await doc.reference.delete();
+    }
+
     await _firestore.collection('users').doc(userId).delete();
   }
 }

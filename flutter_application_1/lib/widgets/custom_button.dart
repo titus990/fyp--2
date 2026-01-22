@@ -17,7 +17,7 @@ class CustomButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 80, // Slightly increased to match the original card height
+      height: 80, 
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [color, Color.lerp(color, Colors.black, 0.2)!],
@@ -26,7 +26,7 @@ class CustomButton extends StatelessWidget {
         ),
         borderRadius: BorderRadius.circular(
           20,
-        ), // Matched the original card radius
+        ), 
         boxShadow: [
           BoxShadow(
             color: color.withValues(alpha: 0.4),
@@ -43,10 +43,10 @@ class CustomButton extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.symmetric(
               horizontal: 20,
-            ), // Matched original padding
+            ), 
             child: Row(
               children: [
-                // Icon Container
+                
                 Container(
                   width: 50,
                   height: 50,
@@ -58,7 +58,7 @@ class CustomButton extends StatelessWidget {
                 ),
                 const SizedBox(width: 16),
 
-                // Text Content
+               
                 Expanded(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -73,7 +73,7 @@ class CustomButton extends StatelessWidget {
                           letterSpacing: 1.2,
                         ),
                       ),
-                      // Optional: Add subtitle if needed
+                     
                       Text(
                         _getSubtitle(label),
                         style: TextStyle(
@@ -86,7 +86,6 @@ class CustomButton extends StatelessWidget {
                   ),
                 ),
 
-                // Arrow Icon
                 Container(
                   width: 40,
                   height: 40,

@@ -1,6 +1,9 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/consts.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
+//import 'package:flutter_application_1/firebase_options.dart';
 import 'dart:async';
 import 'sports/boxing_page.dart';
 import 'sports/kick_boxing.dart';
@@ -8,21 +11,41 @@ import 'sports/self_defense.dart';
 import 'services/auth_page.dart';
 import 'services/admin_service.dart';
 import 'admin/admin_dashboard.dart';
+import 'profile/profile_page.dart';
 
 void main() async {
+  await _setup();
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: const FirebaseOptions(
-      apiKey: "AIzaSyDmMEIlk_ooDWWQonmNk11owj7bzQ1Hu40",
-      authDomain: "strikeforce-938e1.firebaseapp.com",
-      projectId: "strikeforce-938e1",
-      storageBucket: "strikeforce-938e1.firebasestorage.app",
-      messagingSenderId: "234499502169",
-      appId: "1:234499502169:web:06d995fa2d95fbeceb4148",
-      measurementId: "G-WZLYP1QG64",
-    ),
-  );
+  try {
+    await Firebase.initializeApp(
+      options: const FirebaseOptions(
+        apiKey: "AIzaSyDmMEIlk_ooDWWQonmNk11owj7bzQ1Hu40",
+        authDomain: "strikeforce-938e1.firebaseapp.com",
+        projectId: "strikeforce-938e1",
+        storageBucket: "strikeforce-938e1.firebasestorage.app",
+        messagingSenderId: "234499502169",
+        appId: "1:234499502169:android:af54b8b81bdf453aeb4148",
+        measurementId: "G-WZLYP1QG64",
+      ),
+    );
+  } catch (e) {
+    debugPrint(
+      "Firebase initialization failed (probably already initialized): $e",
+    );
+  }
   runApp(const StrikeForceApp());
+}
+
+Future<void> _setup() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  try {
+    Stripe.publishableKey = stripePublishablekey;
+    debugPrint('✅ Stripe initialized successfully');
+    debugPrint('   Publishable key: ${stripePublishablekey.substring(0, 20)}...');
+  } catch (e) {
+    debugPrint('❌ Failed to initialize Stripe: $e');
+    rethrow;
+  }
 }
 
 class StrikeForceApp extends StatelessWidget {
@@ -151,6 +174,8 @@ class WelcomePage extends StatelessWidget {
       builder: (context, snapshot) {
         final isAdmin = snapshot.data ?? false;
 
+        AdminService().updateLastActive();
+
         return Scaffold(
           backgroundColor: const Color(0xFF0A0E21),
           floatingActionButton: isAdmin
@@ -161,226 +186,238 @@ class WelcomePage extends StatelessWidget {
                   backgroundColor: Colors.redAccent,
                 )
               : null,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout, color: Colors.white70),
-            onPressed: () => _signOut(context),
-            tooltip: 'Sign Out',
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.person, color: Colors.white70),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ProfilePage(),
+                    ),
+                  );
+                },
+                tooltip: 'Profile',
+              ),
+              IconButton(
+                icon: const Icon(Icons.logout, color: Colors.white70),
+                onPressed: () => _signOut(context),
+                tooltip: 'Sign Out',
+              ),
+            ],
           ),
-        ],
-      ),
-      body: SafeArea(
-        child: Container(
-          width: double.infinity,
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [Color(0xFF1A1F38), Color(0xFF0A0E21)],
-            ),
-          ),
-          child: Center(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    if (user != null && user.email != null)
-                      Column(
-                        children: [
-                          const Text(
-                            'Welcome,',
+          body: SafeArea(
+            child: Container(
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Color(0xFF1A1F38), Color(0xFF0A0E21)],
+                ),
+              ),
+              child: Center(
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        if (user != null && user.email != null)
+                          Column(
+                            children: [
+                              const Text(
+                                'Welcome,',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w300,
+                                  letterSpacing: 1.2,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                user.email!.split('@')[0],
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+
+                        const SizedBox(height: 40),
+
+                        Container(
+                          width: 120,
+                          height: 120,
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFFFF6B6B), Color(0xFFFF8E53)],
+                              begin: Alignment.center,
+                              end: Alignment.topCenter,
+                            ),
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.redAccent.withOpacity(0.6),
+                                blurRadius: 20,
+                                spreadRadius: 2,
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.sports_mma_rounded,
+                            color: Colors.white,
+                            size: 60,
+                          ),
+                        ),
+
+                        const SizedBox(height: 30),
+
+                        ShaderMask(
+                          shaderCallback: (bounds) => const LinearGradient(
+                            colors: [Color(0xFFFF6B6B), Color(0xFFFF8E53)],
+                            begin: Alignment.centerLeft,
+                            end: Alignment.centerRight,
+                          ).createShader(bounds),
+                          child: const Text(
+                            'Strike Force',
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 24,
-                              fontWeight: FontWeight.w300,
-                              letterSpacing: 1.2,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            user.email!.split('@')[0],
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
+                              fontSize: 36,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 2.0,
                               color: Colors.white,
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
                             ),
                           ),
-                        ],
-                      ),
-
-                    const SizedBox(height: 40),
-
-                    Container(
-                      width: 120,
-                      height: 120,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFFFF6B6B), Color(0xFFFF8E53)],
-                          begin: Alignment.center,
-                          end: Alignment.topCenter,
                         ),
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.redAccent.withOpacity(0.6),
-                            blurRadius: 20,
-                            spreadRadius: 2,
+
+                        const SizedBox(height: 10),
+                        const Text(
+                          'Choose your fighting style',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.white54,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w300,
+                            letterSpacing: 1.0,
                           ),
-                        ],
-                      ),
-                      child: const Icon(
-                        Icons.sports_mma_rounded,
-                        color: Colors.white,
-                        size: 60,
-                      ),
-                    ),
-
-                    const SizedBox(height: 30),
-
-                    ShaderMask(
-                      shaderCallback: (bounds) => const LinearGradient(
-                        colors: [Color(0xFFFF6B6B), Color(0xFFFF8E53)],
-                        begin: Alignment.centerLeft,
-                        end: Alignment.centerRight,
-                      ).createShader(bounds),
-                      child: const Text(
-                        'Strike Force',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 36,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 2.0,
-                          color: Colors.white,
                         ),
-                      ),
-                    ),
 
-                    const SizedBox(height: 10),
-                    const Text(
-                      'Choose your fighting style',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.white54,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w300,
-                        letterSpacing: 1.0,
-                      ),
-                    ),
+                        const SizedBox(height: 40),
 
-                    const SizedBox(height: 40),
-
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/boxing');
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFFF416C),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 30,
-                          vertical: 16,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.sports_martial_arts),
-                          SizedBox(width: 10),
-                          Text(
-                            'Boxing',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.pushNamed(context, '/boxing');
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFFF416C),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 30,
+                              vertical: 16,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
                             ),
                           ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/selfdefense');
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF2193B0),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 30,
-                          vertical: 16,
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.sports_martial_arts),
+                              SizedBox(width: 10),
+                              Text(
+                                'Boxing',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.security),
-                          SizedBox(width: 10),
-                          Text(
-                            'Self Defense',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
+
+                        const SizedBox(height: 20),
+
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.pushNamed(context, '/selfdefense');
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF2193B0),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 30,
+                              vertical: 16,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
                             ),
                           ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/kickboxing');
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFFF8C00),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 30,
-                          vertical: 16,
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.security),
+                              SizedBox(width: 10),
+                              Text(
+                                'Self Defense',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.sports_kabaddi),
-                          SizedBox(width: 10),
-                          Text(
-                            'Kick Boxing',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
+
+                        const SizedBox(height: 20),
+
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.pushNamed(context, '/kickboxing');
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFFF8C00),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 30,
+                              vertical: 16,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
                             ),
                           ),
-                        ],
-                      ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.sports_kabaddi),
+                              SizedBox(width: 10),
+                              Text(
+                                'Kick Boxing',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-      ),
-    );
+        );
       },
     );
   }

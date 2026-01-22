@@ -1,7 +1,16 @@
-import 'package:flutter/material.dart';
 import 'dart:async';
+import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../services/progress_service.dart';
 import '../widgets/workout_detail.dart';
 import '../widgets/hover_card.dart';
+import '../profile/profile_page.dart';
+import '../widgets/weekly_planner_page.dart';
+import '../widgets/customize_routine_page.dart';
+import '../widgets/feedback_page.dart';
+import '../services/premium_service.dart';
+import '../widgets/paywall_dialog.dart';
+import '../services/payment_page.dart';
 
 class KickBoxingPage extends StatefulWidget {
   const KickBoxingPage({super.key});
@@ -85,6 +94,7 @@ class _KickBoxingPageState extends State<KickBoxingPage> {
       });
       startTimer();
     } else {
+      _saveProgress();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text("Workout complete! Great job 👊"),
@@ -95,6 +105,25 @@ class _KickBoxingPageState extends State<KickBoxingPage> {
           ),
         ),
       );
+    }
+  }
+
+  Future<void> _saveProgress() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      try {
+        await ProgressService().saveProgress(
+          user.uid,
+          'Kickboxing Freestyle',
+          {
+            'duration': 180, 
+            'rounds': 3, 
+            'type': 'kickboxing_complete'
+          },
+        );
+      } catch (e) {
+        print("Error saving kickboxing progress: $e");
+      }
     }
   }
 
@@ -113,60 +142,61 @@ class _KickBoxingPageState extends State<KickBoxingPage> {
     return "$min:$sec";
   }
 
-  void openWorkout(String title, bool isPremium) {
+  void openWorkout(String title, bool isPremium) async {
+    // Check premium status if this is a premium workout
     if (isPremium) {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          backgroundColor: const Color(0xFF1A1F38),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          title: const Text(
-            'Premium Workout',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-          ),
-          content: Text(
-            'You are now starting "$title". Enjoy your premium workout!',
-            style: const TextStyle(color: Colors.white70),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFFF8C00), Color(0xFFFFD700)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 10,
-                ),
-                child: const Text(
-                  'Close',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
-    } else {
+      final userIsPremium = await PremiumService.instance.isPremiumUser();
+      
+      if (!userIsPremium) {
+        // Show paywall dialog
+        final shouldUpgrade = await PaywallDialog.show(
+          context,
+          featureName: title,
+          showCoachOption: false,
+        );
+        
+        if (shouldUpgrade == true) {
+          // Navigate to payment page
+          if (mounted) {
+            final paymentSuccess = await Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const PaymentPage()),
+            );
+            
+            if (paymentSuccess == true && mounted) {
+              // Payment successful! Retry opening the workout
+              openWorkout(title, isPremium);
+            }
+          }
+        }
+        return; // Block access
+      }
+    }
+
+    // Handle Calendar navigation
+    if (title == 'Workout Calendar') {
       Navigator.push(
         context,
-        MaterialPageRoute(
-          builder: (context) =>
-              WorkoutDetailPage(title: title, isPremium: isPremium),
-        ),
+        MaterialPageRoute(builder: (context) => const WeeklyPlannerPage()),
       );
+      return;
     }
+    if (title == 'Custom Training Session') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const CustomizeRoutinePage()),
+      );
+      return;
+    }
+
+    // For other workouts, navigate to workout detail
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) =>
+            WorkoutDetailPage(title: title, isPremium: isPremium),
+      ),
+    );
   }
 
   @override
@@ -219,6 +249,55 @@ class _KickBoxingPageState extends State<KickBoxingPage> {
               ),
               onPressed: () => Navigator.pop(context),
             ),
+            actions: [
+              IconButton(
+                icon: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.rate_review,
+                    color: Colors.white,
+                  ),
+                ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const FeedbackPage(
+                        moduleType: 'kickboxing',
+                        moduleName: 'Kickboxing Module',
+                      ),
+                    ),
+                  );
+                },
+                tooltip: 'Module Feedback',
+              ),
+              IconButton(
+                icon: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.person,
+                    color: Colors.white,
+                  ),
+                ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const ProfilePage()),
+                  );
+                },
+              ),
+              const SizedBox(width: 16),
+            ],
           ),
           SliverToBoxAdapter(
             child: Padding(
@@ -239,7 +318,7 @@ class _KickBoxingPageState extends State<KickBoxingPage> {
                           rating: '4.8 / 5',
                           type: 'Kickboxing',
                           image:
-                              'https://img.freepik.com/free-photo/young-fighter-training-gym_23-2148847673.jpg',
+                              'assets/kick_boxing.png',
                           onTap: () => openWorkout(
                             'High-Intensity Kickboxing Combos',
                             false,
@@ -251,7 +330,7 @@ class _KickBoxingPageState extends State<KickBoxingPage> {
                           rating: '4.6 / 5',
                           type: 'Kickboxing',
                           image:
-                              'https://img.freepik.com/free-photo/strong-woman-doing-kickboxing-gym_23-2148942094.jpg',
+                              'assets/kick_boxing.png',
                           onTap: () =>
                               openWorkout('Cardio Power Kick Drills', true),
                           isPremium: true,
@@ -261,35 +340,39 @@ class _KickBoxingPageState extends State<KickBoxingPage> {
                   ),
                   const SizedBox(height: 30),
 
-                  // Combine Your Training Section
+                  
                   _buildSectionTitle('Combine Your Training'),
                   const SizedBox(height: 16),
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      _buildCombineCard(
-                        title: 'Train Now!',
-                        subtitle: 'Create your own session',
-                        image:
-                            'https://img.freepik.com/free-photo/boxing-fitness-training_23-2148888431.jpg',
-                        onTap: () =>
-                            openWorkout('Custom Training Session', false),
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF2193B0), Color(0xFF6DD5ED)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
+                      Expanded(
+                        child: _buildCombineCard(
+                          title: 'Train Now!',
+                          subtitle: 'Create your own session',
+                          image:
+                              'assets/kick_boxing.png',
+                          onTap: () =>
+                              openWorkout('Custom Training Session', false),
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF2193B0), Color(0xFF6DD5ED)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
                         ),
                       ),
-                      _buildCombineCard(
-                        title: 'Calendar',
-                        subtitle: 'Schedule workouts',
-                        image:
-                            'https://img.freepik.com/free-vector/calendar-icon_23-2147511062.jpg',
-                        onTap: () => openWorkout('Workout Calendar', false),
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFFFF416C), Color(0xFFFF4B2B)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _buildCombineCard(
+                          title: 'Calendar',
+                          subtitle: 'Schedule workouts',
+                          image:
+                              'assets/strikeforce.png',
+                          onTap: () => openWorkout('Workout Calendar', false),
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFFFF416C), Color(0xFFFF4B2B)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
                         ),
                       ),
                     ],
@@ -302,7 +385,7 @@ class _KickBoxingPageState extends State<KickBoxingPage> {
                     title: 'New to Kickboxing?',
                     subtitle: 'Start with this guided tutorial!',
                     image:
-                        'https://img.freepik.com/free-photo/woman-training-gym_23-2148942106.jpg',
+                        'assets/kick_boxing.png',
                     onTap: () =>
                         openWorkout('Kickboxing Beginner Tutorial', false),
                   ),
@@ -354,7 +437,7 @@ class _KickBoxingPageState extends State<KickBoxingPage> {
         margin: const EdgeInsets.only(right: 16),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
-          image: DecorationImage(image: NetworkImage(image), fit: BoxFit.cover),
+          image: DecorationImage(image: AssetImage(image), fit: BoxFit.cover),
         ),
         child: Container(
           decoration: BoxDecoration(
@@ -464,7 +547,8 @@ class _KickBoxingPageState extends State<KickBoxingPage> {
     return HoverCard(
       onTap: onTap,
       child: Container(
-        width: 170,
+        // width: 170, // Removed fixed width for responsiveness
+
         height: 160,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
@@ -476,7 +560,7 @@ class _KickBoxingPageState extends State<KickBoxingPage> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
                 image: DecorationImage(
-                  image: NetworkImage(image),
+                  image: AssetImage(image),
                   fit: BoxFit.cover,
                   colorFilter: ColorFilter.mode(
                     Colors.black.withValues(alpha: 0.4),
@@ -548,7 +632,7 @@ class _KickBoxingPageState extends State<KickBoxingPage> {
         height: 160,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
-          image: DecorationImage(image: NetworkImage(image), fit: BoxFit.cover),
+          image: DecorationImage(image: AssetImage(image), fit: BoxFit.cover),
         ),
         child: Container(
           decoration: BoxDecoration(

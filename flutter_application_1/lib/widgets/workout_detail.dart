@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../services/progress_service.dart';
+import 'feedback_widget.dart';
 
 class WorkoutDetailPage extends StatelessWidget {
   final String title;
@@ -34,9 +37,7 @@ class WorkoutDetailPage extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
                 color: Colors.white10,
                 image: const DecorationImage(
-                  image: NetworkImage(
-                    'https://img.freepik.com/free-photo/boxer-punching-bag_23-2148182371.jpg',
-                  ),
+                  image: AssetImage('assets/boxing.png'),
                   fit: BoxFit.cover,
                 ),
               ),
@@ -89,13 +90,52 @@ class WorkoutDetailPage extends StatelessWidget {
               width: double.infinity,
               height: 50,
               child: ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
+                  final user = FirebaseAuth.instance.currentUser;
+                  if (user == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Error: Users IS NULL. Please sign in.'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                    return;
+                  }
+
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Starting $title...'),
-                      backgroundColor: Colors.green,
+                      content: Text('Saving for User ID: ${user.uid}'),
+                      backgroundColor: Colors.blue,
+                      duration: const Duration(seconds: 1),
                     ),
                   );
+
+                  try {
+                    await ProgressService().saveProgress(user.uid, title, {
+                      'type': 'workout_start',
+                      'isPremium': isPremium,
+                    });
+
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Saved to users/${user.uid}/history'),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                    }
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('FAIL: $e'),
+                          backgroundColor: Colors.red,
+                          duration: const Duration(seconds: 5),
+                        ),
+                      );
+                    }
+                    print("Error saving progress: $e");
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.redAccent,
@@ -112,6 +152,66 @@ class WorkoutDetailPage extends StatelessWidget {
                   ),
                 ),
               ),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: OutlinedButton(
+                onPressed: () async {
+                  final user = FirebaseAuth.instance.currentUser;
+                  if (user == null) return;
+
+                  try {
+                    await ProgressService().saveProgress(user.uid, title, {
+                      'type': 'workout_complete',
+                      'isPremium': isPremium,
+                    });
+
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Workout Marked as Complete!'),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                     
+                    }
+                  } catch (e) {
+                    print("Error completing workout: $e");
+                  }
+                },
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: Colors.green),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'Mark as Complete',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 40),
+            const Divider(color: Colors.white24, thickness: 1),
+            const SizedBox(height: 24),
+            const Text(
+              'Feedback & Reviews',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 16),
+            FeedbackWidget(
+              moduleType: 'workout',
+              moduleName: title,
             ),
           ],
         ),

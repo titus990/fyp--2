@@ -1,5 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../services/progress_service.dart';
+import 'feedback_widget.dart';
 
 class TimerPage extends StatefulWidget {
   const TimerPage({super.key});
@@ -136,7 +139,28 @@ class _TimerPageState extends State<TimerPage> {
       });
       startTimer();
     } else {
+      _saveProgress();
       showCompletionDialog();
+    }
+  }
+
+  Future<void> _saveProgress() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      try {
+        await ProgressService().saveProgress(
+          user.uid,
+          'Defense Timer Workout',
+          {
+            'duration': workoutSeconds,
+            'rounds': rounds,
+            'rest': restSeconds,
+            'type': 'timer_complete'
+          },
+        );
+      } catch (e) {
+        print("Error saving timer progress: $e");
+      }
     }
   }
 
@@ -156,6 +180,16 @@ class _TimerPageState extends State<TimerPage> {
           style: TextStyle(color: Colors.white70),
         ),
         actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context); 
+              Navigator.pop(context); 
+            },
+            child: const Text(
+              'Exit',
+              style: TextStyle(color: Colors.white60),
+            ),
+          ),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
@@ -290,51 +324,86 @@ class _TimerPageState extends State<TimerPage> {
           ),
         ],
       ),
-      body: Center(
+      body: SingleChildScrollView(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              'Round $currentRound / $rounds',
-              style: const TextStyle(color: Colors.white70, fontSize: 20),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              formatTime(secondsLeft),
-              style: const TextStyle(
-                color: Colors.redAccent,
-                fontSize: 60,
-                fontWeight: FontWeight.bold,
+            // Timer Section
+            SizedBox(
+              height: MediaQuery.of(context).size.height * 0.5,
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Round $currentRound / $rounds',
+                      style: const TextStyle(color: Colors.white70, fontSize: 20),
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      formatTime(secondsLeft),
+                      style: const TextStyle(
+                        color: Colors.redAccent,
+                        fontSize: 60,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 40),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ElevatedButton(
+                          onPressed: startTimer,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 30,
+                              vertical: 15,
+                            ),
+                          ),
+                          child: const Text('Start'),
+                        ),
+                        const SizedBox(width: 20),
+                        ElevatedButton(
+                          onPressed: resetTimer,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.redAccent,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 30,
+                              vertical: 15,
+                            ),
+                          ),
+                          child: const Text('Reset'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
-            const SizedBox(height: 40),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                ElevatedButton(
-                  onPressed: startTimer,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 30,
-                      vertical: 15,
+            
+            // Feedback Section
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Divider(color: Colors.white24, thickness: 1),
+                  const SizedBox(height: 24),
+                  const Text(
+                    'Feedback & Reviews',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                  child: const Text('Start'),
-                ),
-                const SizedBox(width: 20),
-                ElevatedButton(
-                  onPressed: resetTimer,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.redAccent,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 30,
-                      vertical: 15,
-                    ),
+                  const SizedBox(height: 16),
+                  const FeedbackWidget(
+                    moduleType: 'timer',
+                    moduleName: 'Freestyle Timer',
                   ),
-                  child: const Text('Reset'),
-                ),
-              ],
+                ],
+              ),
             ),
           ],
         ),

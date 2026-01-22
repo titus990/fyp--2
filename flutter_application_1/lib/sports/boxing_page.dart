@@ -3,6 +3,15 @@ import '../widgets/hover_card.dart';
 import '../widgets/workout_detail.dart';
 import '../widgets/timer_page.dart';
 import '../widgets/video_player_page.dart';
+import '../coaches/coach_list_page.dart';
+import '../profile/profile_page.dart';
+import '../widgets/weekly_planner_page.dart';
+import '../widgets/customize_routine_page.dart';
+import '../widgets/feedback_page.dart';
+import '../services/premium_service.dart';
+import '../widgets/paywall_dialog.dart';
+import 'punch_analysis_page.dart';
+import '../services/payment_page.dart';
 
 class BoxingPage extends StatefulWidget {
   const BoxingPage({super.key});
@@ -12,7 +21,54 @@ class BoxingPage extends StatefulWidget {
 }
 
 class _BoxingPageState extends State<BoxingPage> {
-  void openWorkout(String title, bool isPremium) {
+  void openWorkout(String title, bool isPremium) async {
+    // Check premium status if this is a premium workout
+    if (isPremium) {
+      final userIsPremium = await PremiumService.instance.isPremiumUser();
+      
+      if (!userIsPremium) {
+        // Show paywall dialog
+        final showCoachOption = title.contains('Speed & Endurance');
+        final shouldUpgrade = await PaywallDialog.show(
+          context,
+          featureName: title,
+          showCoachOption: showCoachOption,
+        );
+        
+        if (shouldUpgrade == true) {
+          // Navigate to payment page
+          if (mounted) {
+            final paymentSuccess = await Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const PaymentPage()),
+            );
+            
+            if (paymentSuccess == true && mounted) {
+              // Payment successful! Retry opening the workout
+              openWorkout(title, isPremium);
+            }
+          }
+        }
+        return; // Block access
+      }
+    }
+   
+    // Handle special routes
+    if (title == 'Workout Planner') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const WeeklyPlannerPage()),
+      );
+      return;
+    }
+    if (title == 'Custom Boxing Session') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const CustomizeRoutinePage()),
+      );
+      return;
+    }
+
     if (title == 'Heavy Bag Combinations') {
       Navigator.push(
         context,
@@ -26,59 +82,23 @@ class _BoxingPageState extends State<BoxingPage> {
       return;
     }
 
-    if (isPremium) {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          backgroundColor: const Color(0xFF1A1F38),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          title: const Text(
-            'Premium Workout',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-          ),
-          content: Text(
-            'You are now starting "$title". Enjoy your premium workout!',
-            style: const TextStyle(color: Colors.white70),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF2193B0), Color(0xFF6DD5ED)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 10,
-                ),
-                child: const Text(
-                  'Close',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
-    } else {
-      Navigator.push(
+    if (title.contains('Speed & Endurance') && isPremium) {
+       // Navigate to coach list for premium users
+       Navigator.push(
         context,
-        MaterialPageRoute(
-          builder: (context) =>
-              WorkoutDetailPage(title: title, isPremium: isPremium),
-        ),
+        MaterialPageRoute(builder: (context) => const CoachListPage()),
       );
+      return;
     }
+
+    // For other workouts, navigate to workout detail
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) =>
+            WorkoutDetailPage(title: title, isPremium: isPremium),
+      ),
+    );
   }
 
   void openTimerPage() {
@@ -138,6 +158,55 @@ class _BoxingPageState extends State<BoxingPage> {
               ),
               onPressed: () => Navigator.pop(context),
             ),
+            actions: [
+              IconButton(
+                icon: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.rate_review,
+                    color: Colors.white,
+                  ),
+                ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const FeedbackPage(
+                        moduleType: 'boxing',
+                        moduleName: 'Boxing Module',
+                      ),
+                    ),
+                  );
+                },
+                tooltip: 'Module Feedback',
+              ),
+              IconButton(
+                icon: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.person,
+                    color: Colors.white,
+                  ),
+                ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const ProfilePage()),
+                  );
+                },
+              ),
+              const SizedBox(width: 16),
+            ],
           ),
           SliverToBoxAdapter(
             child: Padding(
@@ -162,8 +231,8 @@ class _BoxingPageState extends State<BoxingPage> {
                               openWorkout('Heavy Bag Combinations', false),
                         ),
                         _buildWorkoutCard(
-                          title: 'Speed & Endurance Rounds',
-                          duration: '30 MIN',
+                          title: 'learn from professionals',
+                          duration: '30',
                           rating: '4.7 / 5',
                           type: 'Boxing',
                           image: 'assets/boxing.png',
@@ -181,33 +250,59 @@ class _BoxingPageState extends State<BoxingPage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      _buildCombineCard(
-                        title: 'Train Now!',
-                        subtitle: 'Customize your routine',
-                        image:
-                            'https://img.freepik.com/free-photo/boxing-fitness-training_23-2148888431.jpg',
-                        onTap: () =>
-                            openWorkout('Custom Boxing Session', false),
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF2193B0), Color(0xFF6DD5ED)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
+                      Expanded(
+                        child: _buildCombineCard(
+                          title: 'Train Now!',
+                          subtitle: 'Customize your routine',
+                          image:
+                              'assets/boxing.png',
+                          onTap: () =>
+                              openWorkout('Custom Boxing Session', false),
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF2193B0), Color(0xFF6DD5ED)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
                         ),
                       ),
-                      _buildCombineCard(
-                        title: 'Calendar',
-                        subtitle: 'Plan your next fight',
-                        image:
-                            'https://img.freepik.com/free-vector/calendar-icon_23-2147511062.jpg',
-                        onTap: () => openWorkout('Workout Planner', false),
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFFFF8C00), Color(0xFFFFD700)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _buildCombineCard(
+                          title: 'Calendar',
+                          subtitle: 'Plan your next fight',
+                          image:
+                              'assets/strikeforce.png',
+                          onTap: () => openWorkout('Workout Planner', false),
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFFFF8C00), Color(0xFFFFD700)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
                         ),
                       ),
                     ],
                   ),
+                  const SizedBox(height: 30),
+
+                  _buildSectionTitle('AI Performance Lab'),
+                  const SizedBox(height: 16),
+                  _buildCombineCard(
+                    title: 'Analyze Your Punch',
+                    subtitle: 'AI-Powered Technique Feedback',
+                    image: 'assets/boxing.png', 
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const PunchAnalysisPage()),
+                      );
+                    },
+                     gradient: const LinearGradient(
+                      colors: [Color(0xFF8E2DE2), Color(0xFF4A00E0)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                  ),
+
                   const SizedBox(height: 30),
                   _buildSectionTitle('Learn'),
                   const SizedBox(height: 16),
@@ -215,7 +310,7 @@ class _BoxingPageState extends State<BoxingPage> {
                     title: 'Master the Jab!',
                     subtitle: 'Learn proper punching techniques.',
                     image:
-                        'https://img.freepik.com/free-photo/boxing-trainer_23-2148178820.jpg',
+                        'assets/boxing.png',
                     onTap: () => openWorkout('Learn the Jab Tutorial', false),
                   ),
                   const SizedBox(height: 30),
@@ -267,7 +362,7 @@ class _BoxingPageState extends State<BoxingPage> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
           image: DecorationImage(
-            image: NetworkImage(image),
+            image: AssetImage(image),
             fit: BoxFit.cover,
             colorFilter: ColorFilter.mode(
               Colors.black.withOpacity(0.3),
@@ -383,7 +478,6 @@ class _BoxingPageState extends State<BoxingPage> {
     return HoverCard(
       onTap: onTap,
       child: Container(
-        width: 170,
         height: 160,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
@@ -395,7 +489,7 @@ class _BoxingPageState extends State<BoxingPage> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
                 image: DecorationImage(
-                  image: NetworkImage(image),
+                  image: AssetImage(image),
                   fit: BoxFit.cover,
                   colorFilter: ColorFilter.mode(
                     Colors.black.withOpacity(0.4),
@@ -465,7 +559,7 @@ class _BoxingPageState extends State<BoxingPage> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
           image: DecorationImage(
-            image: NetworkImage(image),
+            image: AssetImage(image),
             fit: BoxFit.cover,
             colorFilter: ColorFilter.mode(
               Colors.black.withOpacity(0.3),

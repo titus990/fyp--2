@@ -44,6 +44,15 @@ class _UserManagementPageState extends State<UserManagementPage> {
                 return const Center(child: CircularProgressIndicator(color: Color(0xFFFF6B6B)));
               }
 
+              if (snapshot.hasError) {
+                return Center(
+                  child: SelectableText(
+                    'Error: ${snapshot.error}', 
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                );
+              }
+
               if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                 return const Center(child: Text('No users found', style: TextStyle(color: Colors.white54)));
               }
@@ -77,7 +86,20 @@ class _UserManagementPageState extends State<UserManagementPage> {
                         ),
                       ),
                       title: Text(email, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                      subtitle: Text('Role: ${role.toUpperCase()}\nID: $userId', style: const TextStyle(color: Colors.white54, fontSize: 12)),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Role: ${role.toUpperCase()}', style: const TextStyle(color: Colors.white54, fontSize: 12)),
+                          if (userData['lastActive'] != null) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              'Active: ${userData['lastActive'].toDate().toString().split('.')[0]}', 
+                              style: const TextStyle(color: Colors.greenAccent, fontSize: 12)
+                            ),
+                          ],
+                          Text('ID: $userId', style: const TextStyle(color: Colors.white24, fontSize: 10)),
+                        ],
+                      ),
                       isThreeLine: true,
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
